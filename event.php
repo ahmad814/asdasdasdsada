@@ -1,72 +1,50 @@
 <?php
+
 ob_start();
 session_start();
 include("cn.php");
+    
 
-if(isset($_SESSION["uname"])) {
-    if (isset($_POST['submit'])) {
-        // Check if file is a valid image file
-        $filename = $_FILES['file']['name'];
-        $filetype = $_FILES['file']['type'];
-        $valid_image_types = array('image/png', 'image/gif', 'image/jpeg', 'image/jpg');
-        if (!in_array($filetype, $valid_image_types)) {
-            echo "<script type='text/javascript'>alert(\"Invalid image file format\")
-                location.href='events.php';
-            </script>";
-            exit();
-        }
+     
 
-        // Upload file
-        $upload_dir = 'events/';
-        $upload_path = $upload_dir . basename($filename);
-        if (!move_uploaded_file($_FILES['file']['tmp_name'], $upload_path)) {
-            echo "<script type='text/javascript'>alert(\"Failed to upload image file\")
-                location.href='events.php';
-            </script>";
-            exit();
-        }
+$uname=$_SESSION["uname"];
+if(isset($_SESSION["uname"]))
+{
+
+
+
+if(isset($_POST['submit']))
+{
+
+    date_default_timezone_set('Asia/Kolkata');
+$curdate= date('d-m-Y H:i');
+ $filename = $_FILES['file']['name'];
+ 
+  // Upload file
+  move_uploaded_file($_FILES['file']['tmp_name'],'events/'.$filename);
    
-        // Validate and sanitize form input data
-        $name = mysqli_real_escape_string($con, $_POST['name']);
-        $date = mysqli_real_escape_string($con, $_POST['date']);
-        $time = mysqli_real_escape_string($con, $_POST['time']);
-        $location = mysqli_real_escape_string($con, $_POST['location']);
-        $link = mysqli_real_escape_string($con, $_POST['link']);
-        $description = mysqli_real_escape_string($con, $_POST['description']);
+    $dec= $_POST['description'];
+      
+ $sql = "INSERT INTO `event`(`name`, `image`, `date`, `time`, `location`, `link`, `description`) VALUES ('".$_POST['name']."','$filename','".$_POST['date']."','".$_POST['time']."','".$_POST['location']."','".$_POST['link']."','$dec') ";
+$result = $con->query($sql);
+ if($result){ echo  "<script type='text/javascript'>alert(\"Add Successfully\")
+ location.href='events.php';
+  </script>";}
+  else
+      { echo  "<script type='text/javascript'>alert(\"not added\")
+ location.href='events.php';
+  </script>";}      
 
-        $date_regex = '/^(0?[1-9]|[12][0-9]|3[01])-(0?[1-9]|1[012])-([12]\d{3})$/';
-        $time_regex = '/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/';
-        if (!preg_match($date_regex, $date) || !preg_match($time_regex, $time)) {
-            echo "<script type='text/javascript'>alert(\"Invalid date or time format\")
-                location.href='events.php';
-            </script>";
-            exit();
-        }
 
-        // Perform SQL insertion using prepared statements
-        $stmt = $con->prepare("INSERT INTO `event`(`name`, `image`, `date`, `time`, `location`, `link`, `description`) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssssss", $name, $filename, $date, $time, $location, $link, $description);
-        if ($stmt->execute()) {
-            echo "<script type='text/javascript'>alert("Add Successfully")
-location.href='events.php';
-</script>";
-} else {
-echo "<script type='text/javascript'>alert("Failed to add event")
-location.href='events.php';
-</script>";
+
 }
-}
-} else {
-// Redirect user to login page if not logged in
-header("location:login.php");
-exit();
-}
-?>
+
+    ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>Add Event | Admin Panel</title>
+    <title>Admin Panel</title>
     <!-- Meta Tags -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
@@ -102,120 +80,100 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
     <link href="//fonts.googleapis.com/css?family=Poiret+One" rel="stylesheet">
     <link href="//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
 
+
     <link rel="stylesheet" type="text/css" href="editor/css/style.css" />
+
+    <script type="text/javascript" src="editor/lib/jquery-1.9.0.min.js"></script>
+
+    <!-- Redactor is here -->
     <link rel="stylesheet" href="editor/redactor/redactor.css" />
+    <script src="editor/redactor/redactor.min.js"></script>
 
-    <style>
-        /* Page title */
-        .page-title {
-            background-color: #0E4C92;
-            text-align: center;
-            padding: 20px;
-            margin-bottom: 30px;
+    <script type="text/javascript">
+    $(document).ready(
+        function()
+        {
+            $('#redactor_content').redactor({
+                imageUpload: 'editor/demo/scripts/image_upload.php',
+                fileUpload: 'editor/demo/scripts/file_upload.php',
+                imageGetJson: 'editor/demo/json/data.json'
+            });
         }
+    );
+    </script>
 
-        .page-title h2 {
-            color: white;
-            font-family: 'Open Sans', sans-serif;
-            margin: 0;
-            font-size: 28px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        /* Form container */
-        .form-container {
-            background-color: #F5F5F5;
-            padding: 30px;
-            border-radius: 10px;
-            margin-top: 30px;
-            margin-bottom: 30px;
-        }
-
-        /* Form elements */
-        label {
-            font-size: 18px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-    </style>
+    <!--//web-fonts-->
 </head>
 
 <body>
     <div class="wrapper">
         <!-- Sidebar Holder -->
-        <?php include("header.php"); ?>
+       <?php include("header.php"); ?>
+            <!--// top-bar -->
 
-        <!-- Page Content Holder -->
-        <div id="content">
-            <div class="page-title">
-                <h2>Add Event</h2>
+            <!-- main-heading -->
+            
+            <!--// main-heading -->
+
+            <!-- Error Page Content -->
+            <div class="blank-page-content">
+
+                <!-- Error Page Info -->
+                <div class="outer-w3-agile mt-3">
+                  <div id="page">
+                    <h4>Add Event</h4>
+                    <form action="" method="post" enctype="multipart/form-data">
+                        
+                       
+                        
+                        
+                    <label class="col-sm-2 col-form-label"> Event Name</label> <input type="text" name="name"class="form-control" required>   <br>
+                   
+                    <label class="col-sm-12 col-form-label">Event Image</label>
+                    <input type="file" name="file" id="file"  class="form-control" required><br>
+                    
+    
+                    <label class="col-sm-2 col-form-label"> Event Date</label> <input type="text" name="date" class="form-control" required>   <br>
+                    
+
+                      <input type="hidden" name="time" class="form-control" value="4pm">
+                     <br>
+     <label class="col-sm-2 col-form-label"> Event Location</label> <input type="text" name="location" class="form-control" >
+
+
+                     <br>
+                     <label class="col-sm-2 col-form-label"> Event Link</label> <input type="text" name="link" class="form-control" ><br>
+     <label class="col-sm-2 col-form-label">Description</label> 
+     <textarea name="description" rows="4" cols="50" class="form-control" id="redactor_content" >
+</textarea>
+
+    </div>
+    <input type="submit" name="submit" class="btn btn-primary"></form>
+                </div>
+                <!--// Error Page Info -->
+
             </div>
 
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="form-container">
-                            <form action="" method="post" enctype="multipart/form-data">
-                                <div class="form-group">
-                                    <label for="name">Event Name:</label>
-                                    <input type="text" name="name" class="form-control" required>
-                                </div>
+            <!--// Error Page Content -->
 
-                                <div class="form-group">
-                                    <label for="file">Event Image:</label>
-                                    <input type="file" name="file" id="file" class="form-control" required>
-                                </div>
+            <!-- Copyright -->
+            
+            <!--// Copyright -->
+        </div>
+    </div>
 
-                                <div class="form-group">
-                                    <label for="date">Event Date:</label>
-                                    <input type="text" name="date" class="form-control" required>
-                                </div>
 
-                                <div class="form-group">
-                                    <label for="location">Event Location:</label>
-                                    <input type="text" name="location" class="form-control">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="link">Event Link:</label>
-                                    <input type="text" name="link" class="form-control">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="description">Description:</label>
-                                    <textarea name="description" rows="4" cols="50" class="form-control" id="redactor_content"></textarea>
-                                </div>
-
-                                <input type="submit" name="submit" class="btn btn-primary btn-block" value="Add Event">
-</form>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- Required common Js -->
-<script src="js/jquery-2.2.3.min.js"></script>
-<script src="js/bootstrap.js"></script>
-<!-- //Js for bootstrap working -->
-
-<!-- Redactor script -->
-<script type="text/javascript" src="editor/lib/jquery-1.9.0.min.js"></script>
-<script src="editor/redactor/redactor.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#redactor_content').redactor({
-            imageUpload: 'editor/demo/scripts/image_upload.php',
-            fileUpload: 'editor/demo/scripts/file_upload.php',
-            imageGetJson: 'editor/demo/json/data.json'
-        });
-    });
-</script>
+    <!-- Required common Js -->
+    
+    <!-- //Js for bootstrap working -->
 
 </body>
 
 </html>
+<?php
+}
+else
+{
+  header("location:index.php");
+}
+?>
