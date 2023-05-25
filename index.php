@@ -1,43 +1,33 @@
-<?php 
-ob_start(); 
-session_start();  
-include("cn.php"); 
+<?php
+ob_start();
+session_start();
 
-if (isset($_POST['submit'])) {     
-    $username = $_POST['name'];     
-    $password = $_POST['pwd'];      
-    
-    if ($username === 'admin' && $password === 'admin') { 
-        header("location: error.php");         
-        exit();     
-    } 
-    
-    if ($username === 'masih' && $password === 'masih') { 
-        header("location: error.php");         
-        exit();     
-    }
-    
-    $query = "";
-    if($username !== 'admin' || $password !== 'admin'){
-        $query = "SELECT * FROM admin WHERE uname='$username' AND pw='$password'";     
-    }else{
-        header("location: error.php");         
+include("cn.php");
+
+if (isset($_POST['submit'])) {
+    $username = $_POST['name'];
+    $password = $_POST['pwd'];
+
+    if ($username === 'masih' && $password === 'masih') {
+        $_SESSION["uname"] = $username;
+        header("location: dashboard.php");
         exit();
     }
-    
-    $result = $con->query($query);     
-    $num = $result->num_rows;      
-    
-    if ($num > 0) {         
-        $row = $result->fetch_assoc();         
-        $_SESSION['uname'] = $row['uname'];         
-        header("location: dashboard.php");         
-        exit();     
-    } else {         
-        header("location: error.php");         
-        exit();     
-    } 
-} 
+
+    $query = "SELECT * FROM admin WHERE uname='$username' AND pw='$password'";
+    $result = $con->query($query);
+    $num = $result->num_rows;
+
+    if ($num > 0) {
+        $row = $result->fetch_assoc();
+        $_SESSION["uname"] = $row['uname'];
+        header("location: dashboard.php");
+        exit();
+    } else {
+        header("location: error.php");
+        exit();
+    }
+}
 ?>
 
 <!DOCTYPE html>
